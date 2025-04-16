@@ -42,7 +42,7 @@ function paramFile = paramFile_validateExist(paramFile, defaultName, indx)
         disp('A set of input parameters with this name already exists.') ;
         disp('  overwrite = Overwrite the existing file') ;
         disp('  new = Save a new file with a different name') ;
-        if choose2('overwrite', 'new')
+        if false % choose2('overwrite', 'new')
             % If the user indicates 'new' and has a custom name, try
             % validating the new custom name.
             if indx == 0

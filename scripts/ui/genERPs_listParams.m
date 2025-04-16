@@ -60,7 +60,7 @@ end
 %% BAD CHANNEL INCLUSION/EXCLUSION
 fprintf('Bad Channels: ') ;
 if params.badChans.inc; fprintf('Included\n') ;
-else; fprintf(['Excluded\n - File: ' params.badChans.file '\n']) ;
+else; fprintf(['Excluded\n - File: ' '' '\n']) ; % params.badChans.file
 end
 
 %% CALCULATING VALUES

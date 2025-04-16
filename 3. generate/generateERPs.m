@@ -29,6 +29,10 @@
 % Use input from the command line to set the path to the data. If an 
 % invalid path is entered, repeat until a valid path is entered.
 clear ;
+
+%% MIKE
+global gen_args;
+
 fprintf('Preparing HAPPE generateERPs...\n') ;
 happeDir = strrep(fileparts(which(mfilename('fullpath'))), [filesep '3. ' ...
     'generate'], '') ;
@@ -42,7 +46,11 @@ addpath([happeDir filesep '3. generate'], ...
 % Use input from the command line to set the path to the data. If an 
 % invalid path is entered, repeat until a valid path is entered.
 while true
-    srcDir = input('Enter the path to the folder containing the processed dataset(s):\n> ','s') ;
+
+    val = gen_args("erp_prepared_dir") ;
+    srcDir = val{1} ;
+    % srcDir = input('Enter the path to the folder containing the processed dataset(s):\n> ','s') ;
+
     if exist(srcDir, 'dir') == 7; break ;
     else; disp("Invalid input: please enter the complete path to the folder containing the dataset(s).") ;
     end
@@ -52,15 +60,15 @@ cd(srcDir) ;
 %% CREATE OUTPUT FOLDERS
 % Create the folders in which to store outputs
 fprintf('Creating output folders...\n') ;
-if ~isfolder([srcDir filesep 'generateERPs']); mkdir([srcDir filesep 'generateERPs']) ;
+if ~isfolder(strjoin([srcDir filesep 'generateERPs'], '')); mkdir(strjoin([srcDir filesep 'generateERPs'], '')) ;
 end
 addpath('generateERPs') ;
-cd([srcDir filesep 'generateERPs']) ;
-if ~isfolder([srcDir filesep 'generateERPs' filesep 'ERP_timeseries'])
-    mkdir([srcDir filesep 'generateERPs' filesep 'ERP_timeseries']) ;
+cd(strjoin([srcDir filesep 'generateERPs'], '')) ;
+if ~isfolder(strjoin([srcDir filesep 'generateERPs' filesep 'ERP_timeseries'], ''))
+    mkdir(strjoin([srcDir filesep 'generateERPs' filesep 'ERP_timeseries'], '')) ;
 end
-if ~isfolder([srcDir filesep 'generateERPs' filesep 'ERP_calculatedVals'])
-    mkdir([srcDir filesep 'generateERPs' filesep 'ERP_calculatedVals']) ;
+if ~isfolder(strjoin([srcDir filesep 'generateERPs' filesep 'ERP_calculatedVals'], ''))
+    mkdir(strjoin([srcDir filesep 'generateERPs' filesep 'ERP_calculatedVals'], '')) ;
 end
 fprintf('Output folders created.\n') ;
 
@@ -80,12 +88,13 @@ if ~preExist || changedParams
     fprintf(['Parameter file save name:\n  default = Default name (genERP' ...
         '_parameters_dd-mm-yyyy.mat)\n  custom = Create a custom file name' ...
         '\n']) ;
-    if choose2('custom', 'default')
+    if false % choose2('custom', 'default')
         paramFile = paramFile_validateExist(['genERP_parameters_' ...
             datestr(now, 'dd-mm-yyyy') '.mat'], 'genERP_parameters_', 2) ;
     else
         fprintf('File name (Do not include .mat):\n') ;
-        paramFile = paramFile_validateExist([input('> ', 's') '.mat'], ...
+        fname = 'genparams' % input('> ', 's')
+        paramFile = paramFile_validateExist([fname '.mat'], ...
             'genERP_parameters_', 0) ;
     end
 
@@ -105,7 +114,8 @@ end
 fprintf(sprintf(['Enter the suffix used for this dataset, including stimulus tag' ...
     ' (if applicable).\nIf no extension beyond "%s", press ' ...
     'enter/return.\n'], ext)) ;
-suffix = input('> ', 's') ;
+% suffix = input('> ', 's') ;
+suffix = '' ;
 FileNames = {dir(['*' ext suffix '.txt']).name} ;
 if size(FileNames,2) < 1; error('ERROR: No files detected') ; end
 
@@ -398,6 +408,9 @@ if params.plot
     else
         plot(lats, aveToPlot(:,1)) ;
         title('Average ERP for Individual File') ;
+        % MIKE
+        val = gen_args("erp_img_result") ;
+        saveas(gcf, val{1});
     end
     
     %% PLOT TRIAL WAVEFORMS BY FILE
@@ -432,7 +445,7 @@ if params.plot
 end
 
 %% COMPILE STATS TABLES
-cd([srcDir filesep 'generateERPs' filesep 'ERP_timeseries']) ;
+cd(strjoin([srcDir filesep 'generateERPs' filesep 'ERP_timeseries'], '')) ;
 % ABBREVIATE LONG FILE NAMES
 outputFileNames = FileNames ;
 for i=1:size(FileNames,2)
@@ -494,7 +507,7 @@ if params.indivTrials
 end
 
 if params.calcVals.on
-    cd([srcDir filesep 'generateERPs' filesep 'ERP_calculatedVals']) ;
+    cd(strjoin([srcDir filesep 'generateERPs' filesep 'ERP_calculatedVals'], '')) ;
     % AVERAGE OVER TRIALS ALL FILES - ERP MEASURE VALUES
     % Peaks:
     peakNames = cell(1, 2*size(params.calcVals.windows,1)+6) ;

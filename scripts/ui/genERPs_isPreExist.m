@@ -40,7 +40,7 @@
 function [preExist, params, changeParams] = genERPs_isPreExist()
 % DETERMINE IF LOADING PRE-EXISTING SET USING USER-INPUT VIA COMMAND WINDOW
 fprintf('Load pre-existing set of input parameters? [Y/N]\n') ;
-preExist = choose2('n','y') ;
+preExist = false ; % choose2('n','y') ;
 
 % IF LOADING PRE-EXISTING PARAMETERS...
 if preExist

@@ -38,7 +38,10 @@ function [reprocessing, ranMuscIL, rerunExt] = isReprocessed()
 fprintf(['Select an option:\n  raw = Run on raw data from the start\n' ...
     '  reprocess = Run on HAPPE-processed data starting post-artifact ' ...
     'reduction\n']) ;
-reprocessing = choose2('raw', 'reprocess') ;
+global python_args ;
+val = python_args("raw_data") ;
+reprocessing = val{1} ;
+% reprocessing = choose2('raw', 'reprocess') ;
 
 % IF REPROCESSING...
 if reprocessing

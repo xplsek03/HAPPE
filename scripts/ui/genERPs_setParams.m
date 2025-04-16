@@ -40,6 +40,8 @@
 
 function params = genERPs_setParams(params, preExist, changedParams)
 
+global gen_args ;
+
 paramChoice = 'na' ;
 while true
     %% BREAK IF NOT CHANGING PRE-EXISTING PARAMS
@@ -58,13 +60,15 @@ while true
     if ~preExist || strcmpi(paramChoice, 'ave/indiv trials')
         fprintf(['Trial type:\n  average = Average over trials\n  ' ...
             'individual = Individual trials\n']) ;
-        params.indivTrials = choose2('average', 'individual') ;
+             val = gen_args("indivTrials") ; % choose2('average', 'individual') ;
+             params.indivTrials = val{1} ;
         
         % SINGLE OR MULTIPLE FILES
         if params.indivTrials
             fprintf(['Choose your export format:\n  sheets = A single Excel file' ...
                 ' with multiple sheets\n  files = Multiple .csv files\n']) ;
-            params.export.csv = choose2('sheets', 'files') ;  
+             val = gen_args("output_format") ; % choose2('sheets', 'files') ;  
+             params.export.csv = val{1} ;
         else; params.export.csv = 1 ;
         end
     end 
@@ -82,15 +86,18 @@ while true
     if ~preExist || strcmpi(paramChoice, 'bad channel inclusion')
         fprintf(['Include bad channels in calculating ERP?\n  include = Keep bad ' ...
             'channels\n  exclude = Remove bad channels\n']) ;
-        params.badChans.inc = choose2('exclude', 'include') ;
-        
+        val = gen_args("include_bad_channels") ; % choose2('exclude', 'include') ;
+        params.badChans.inc = val{1} ;
+
         % DETERMINE FILE CONTAINING THE BAD CHANNELS
         if ~params.badChans.inc
             while true
                 fprintf(['Enter the file containing the bad channels, including ' ...
                     'the complete path.\nRefer to the HAPPE User Guide for ' ...
                     'instructions on creating this file and an example.\n']) ;
-                params.badChans.file = input('> ', 's') ;
+                % params.badChans.file = input('> ', 's') ;
+                val = gen_args("bad_channels_file") ;
+                params.badChans.file = val{1} ;
                 if isfile(params.badChans.file); break ;
                 else; fprintf('Invalid input: please enter an existing file.') ;
                 end
@@ -104,7 +111,8 @@ while true
     % calculating area under the curve/50% area under the curve.
     if ~preExist || strcmpi(paramChoice, 'calculating values')
         fprintf('Calculate ERP values? [Y/N]\n') ;
-        params.calcVals.on = choose2('n', 'y') ;
+        val = gen_args("calc_erp_vals") ; % choose2('n', 'y') ;
+        params.calcVals.on = val{1} ;
         if params.calcVals.on
             % COLLECT LATENCY WINDOWS
             params.calcVals.windows = [] ;
@@ -114,9 +122,11 @@ while true
                 'When you have entered all windows, input "done" (without quotations).' ...
                 '\nExample: 10 100 max\n']) ;
             while true
-                temp = split(input('> ', 's')) ;
-                if length(temp) == 1 && strcmpi(temp, 'done'); break ;
-                elseif size(temp, 1) == 3; temp = reshape(temp, 1, 3) ;
+                val = gen_args("latency_window") ;
+                temp = split(val{1}) ;
+                % temp = split(input('> ', 's')) ;
+                %if length(temp) == 1 && strcmpi(temp, 'done'); break ;
+                if size(temp, 1) == 3; temp = reshape(temp, 1, 3) ; % elseif
                 else
                     fprintf(['Invalid input: please enter two numbers and "max"/"min"' ...
                         ' or "done" (without quotations).\n']) ;
@@ -133,6 +143,7 @@ while true
                 else
                     params.calcVals.windows = [params.calcVals.windows; temp] ;
                 end
+                break
             end
 
             % DETERMINE METHOD FOR MEAN AMPLITUDE
@@ -160,7 +171,9 @@ while true
     %% DETERMINE IF PLOTTING
     if ~preExist || strcmpi(paramChoice,'plotting')
         fprintf('Plot the ERP waveforms? [Y/N]\n') ;
-        params.plot = choose2('n','y') ;
+        val = gen_args("plot_erps") ;
+        params.plot = val{1} ;
+        % params.plot = choose2('n','y') ;
     end
 
     %% DONE
@@ -168,21 +181,25 @@ while true
        fprintf('Please check your parameters before continuing.\n') ;
        genERPs_listParams(params) ;
        fprintf('Are the above parameters correct? [Y/N]\n') ;
-       if choose2('n','y'); break ;
-       elseif ~preExist; changedParams = 1 ; preExist = 1 ;
-       end
+       break
+       % if choose2('n','y'); break ;
+       % elseif ~preExist; changedParams = 1 ; preExist = 1 ;
+       %end
    end 
 end
 end
 
 function method = calcValMethods(value)
+global gen_args ;
 fprintf(['Choose a method for calculating ' value ':\n' ...
     '  windows = Restrict calculations to the user-specified latency window(s)\n' ...
     '  zeros = Calculate using points where the amplitude is 0\n' ...
     '  both = Calculate both by windows and by zeros\n']) ;
 method = [0,0] ;
 while true
-    ui = input('> ', 's') ;
+    % ui = input('> ', 's') ;
+    val = gen_args("mean_calc_method") ;
+    ui = val{1} ;
     if strcmpi(ui, 'windows'); method(1) = 1; break;
     elseif strcmpi(ui, 'zeros'); method(2) = 1; break ;
     elseif strcmpi(ui, 'both'); method = [1,1] ; break ;

@@ -91,10 +91,16 @@
 %
 % If you edit the code we CANNOT GUARANTEE the code will function as
 % intended and may negatively affect HAPPE's performance.
+%
+% HEHE I HAVE NO OTHER FUCKING OPTION SO
+%
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 %% CLEAR THE WORKSPACE
 clear ;
+
+%% MIKE
+global python_args;
 
 %% SET PATH TO INCLUDE NECESSARY FOLDERS
 fprintf('Preparing HAPPE...\n') ;
@@ -150,7 +156,10 @@ clear('toolboxes') ;
 % Use input from the Command Window to set the path to the data. If an 
 % invalid path is entered, repeat until a valid path is entered.
 while true
-    srcDir = input('Enter the path to the folder containing the dataset(s):\n> ','s') ;
+    % srcDir = input('Enter the path to the folder containing the dataset(s):\n> ','s') ;
+    val = python_args("set_target_path") ;
+    srcDir = val{1};
+
     if exist(srcDir, 'dir') == 7; break ;
     else; fprintf(['Invalid input: please enter the complete path to the ' ...
             'folder containing the dataset(s).\n']) ;
@@ -556,8 +565,12 @@ for currFile = 1:length(FileNames)
             end
 
             % Enter the intermediate_processing folder
-            cd([srcDir filesep dirNames{contains(dirNames, ...
-                'intermediate_processing')}]) ;
+            pth = strjoin([srcDir filesep dirNames{contains(dirNames, ...
+                'intermediate_processing')}],'') ;
+            if ~exist(pth, 'dir')
+                mkdir(pth)
+            end
+            cd(pth) ;
 
             %% REDUCE LINE NOISE
             % Attempt to reduce line noise using the happe_reduceLN
@@ -649,8 +662,12 @@ for currFile = 1:length(FileNames)
             % fails during this step, alert the user that processing failed
             % during wavelet thresholding in the command window and rethrow
             % the error to proceed to the next file.
-            cd([srcDir filesep dirNames{contains(dirNames, ...
-                'wavelet_cleaned_continuous')}]) ;
+            pth = strjoin([srcDir filesep dirNames{contains(dirNames, ...
+                'wavelet_cleaned_continuous')}], '') ;
+            if ~exist(pth, 'dir')
+                mkdir(pth) ;
+            end
+                cd(pth) ;
             pop_saveset(EEG, 'filename', strrep(FileNames{currFile}, ...
                 inputExt, '_prewav.set')) ;
 
@@ -748,8 +765,12 @@ for currFile = 1:length(FileNames)
         % the error to proceed to the next file.
         if params.paradigm.ERP.on
             fprintf('Filtering using ERP cutoffs...\n') ;
-            cd([srcDir filesep dirNames{contains(dirNames, ...
-                'ERP_filtered')}]) ;
+            pth = strjoin([srcDir filesep dirNames{contains(dirNames, ...
+                'ERP_filtered')}], '') ;
+            if ~exist(pth, 'dir')
+                mkdir(pth) ;
+            end
+            cd(pth) ;
             try
                 % If the user indicated to use ERPLAB's butterworth
                 % filter, filter using the butterFilt function (adapted
@@ -797,7 +818,11 @@ for currFile = 1:length(FileNames)
         % If the data is not already segmented, use the user-specified
         % parameters to segment the data. If it is segmented, alert the
         % user via the command window that the data could not be segmented.
-        cd([srcDir filesep dirNames{contains(dirNames, 'segmenting')}]) ;
+        pth = strjoin([srcDir filesep dirNames{contains(dirNames, 'segmenting')}], '') ;
+        if ~exist(pth, 'dir')
+            mkdir(pth) ;
+        end
+        cd(pth) ;
         if params.segment.on
             try EEG = happe_segment(EEG, params) ;
 
@@ -1029,7 +1054,13 @@ for currFile = 1:length(FileNames)
         % If visualizations are enabled, generate topoplots for the current
         % file. If preprocessing for ERPs, this will be the processed ERP
         % spectrum.
-        cd([srcDir filesep dirNames{contains(dirNames, 'processed')}]) ;
+
+        str_path = strjoin([srcDir filesep dirNames{contains(dirNames, 'processed')}], '') ;
+        if ~exist(str_path, 'dir')
+            mkdir(str_path);
+        end
+
+        cd(str_path) ;
         if params.vis.enabled
            if params.paradigm.ERP.on
                figure; pop_timtopo(EEG, [params.vis.min params.vis.max], ...
@@ -1183,8 +1214,13 @@ end
 
 %% GENERATE OUTPUT TABLES
 fprintf('Generating quality assessment outputs...\n') ;
-cd([srcDir filesep dirNames{contains(dirNames, ...
-    'quality_assessment_outputs')}]) ;
+str_path = strjoin([srcDir filesep dirNames{contains(dirNames, ...
+    'quality_assessment_outputs')}], '') ;
+if ~exist(str_path, 'dir')
+    mkdir(str_path);
+end
+
+cd(str_path) ;
 rmpath(genpath(cleanlineDir)) ;
 try
     % CREATE AND SAVE PIPELINE QUALITY ASSESSMENT

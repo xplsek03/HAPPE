@@ -37,11 +37,16 @@
 % with HAPPE. If not, see <https://www.gnu.org/licenses/>.
 
 function [chansAll, chanIDs] = determ_chanIDs()
+
+global gen_args ;
+
 fprintf(['Select channels of interest:\n  all = Select all channels in the ' ...
     'data\n  coi = Select a user-specified subset of channels\n']) ;
 while true
     % Collect and store user input
-    chansAll = input('> ', 's') ;
+    val = gen_args("coi") ;
+    chansAll = val{1} ;
+    % chansAll = input('> ', 's') ;
     
     % If the user requests all channels, set chanIDs to an empty cell array
     % to be filled during the first file run.

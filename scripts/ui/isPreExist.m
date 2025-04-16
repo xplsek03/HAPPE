@@ -38,7 +38,10 @@
 function [preExist, params, changeParams] = isPreExist(reprocessing, ver)
 % DETERMINE IF LOADING PRE-EXISTING SET USING USER-INPUT VIA COMMAND WINDOW
 fprintf('Load pre-existing set of input parameters [Y/N]\n') ;
-preExist = choose2('n','y') ;
+global python_args ;
+val = python_args("use_param_file") ;
+preExist = val{1} ;
+%preExist = choose2('n','y') ;
 
 % IF LOADING PRE-EXISTING PARAMETERS...
 if preExist
@@ -48,7 +51,9 @@ if preExist
         % file, repeats until a valid input is entered.
         fprintf(['Enter your parameter file, including the full path ' ...
             'and file extension:\n']) ;
-        paramFile = input('> ', 's') ;
+        val = python_args("param_file") ;
+        paramFile = val{1} ;
+        %paramFile = input('> ', 's') ;
         if isfile(paramFile); break;
         else; fprintf('Invalid input: please enter the correct file\n') ;
         end
@@ -80,7 +85,10 @@ if preExist
     % to review.
     listParams(params) ;
     fprintf('Change an existing parameter? [Y/N]\n') ;
-    changeParams = choose2('n', 'y') ;
+    global python_args ;
+    val = python_args("change_params") ;
+    changeParams = val{1} ;
+    % changeParams = choose2('n', 'y') ;
     
 % IF NOT LOADING PRE-EXISTING PARAMETERS...
 else
