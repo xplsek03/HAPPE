@@ -30,11 +30,13 @@
 % with HAPPE. If not, see <https://www.gnu.org/licenses/>.
 
 function saveFormat = determ_saveFormat()
+    global python_args ;
 fprintf(['Format to save processed data:\n  1 = .txt file (electrodes as ' ...
     'columns, time as rows) - Choose this for ERP timeseries\n  2 = .mat' ...
     ' file (MATLAB format)\n  3 = .set file (EEGLAB format)\n']) ;
 while true
-    saveFormat = input('> ') ;
+    val = python_args("output_format") ;
+    saveFormat = val{1} ; % input('> ') ;
     if ismember(saveFormat, [1, 2, 3]); break ;
     else; disp("Invalid input: please enter 1, 2, or 3.") ;
     end

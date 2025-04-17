@@ -46,6 +46,7 @@
 % along with HAPPE. If not, see <https://www.gnu.org/licenses/>.
 
 function params = setParams(params, preExist, reprocessing, changedParams, happeDir)
+global python_args ;
 paramChoice = 'na' ;
 while true
     %% BREAK IF NOT CHANGING ANY PRE-EXISTING PARAMETERS
@@ -116,7 +117,8 @@ while true
         % HAPPE.
         fprintf(['Low density data? [Y/N]\nFor HAPPE, low density data ' ...
             'contains 1 to ~32 channels.\n']) ;
-        params.lowDensity = choose2('N', 'Y') ;
+        val = python_args("low_density") ;
+        params.lowDensity = val{1} ; % choose2('N', 'Y') ;
 
         %% PARADIGM (REST VS TASK & ERP):
         % DETERMINE WHETHER THE PARADIGM IS REST OR TASK-RELATED: use user
@@ -125,14 +127,16 @@ while true
         params.paradigm = struct() ;
         fprintf(['Data type:\n  rest = Resting-state/baseline EEG\n  task = ' ...
             'Task-related EEG\n']) ;
-        params.paradigm.task = choose2('rest', 'task') ;
+        val = python_args("data_type") ;
+        params.paradigm.task = val{1} ; % choose2('rest', 'task') ;
         % IF TASK-RELATED DATA, PROMPT IF ERP ANALYSIS: use user input from
         % the command window to determine if pre-processing ERP data. If
         % invalid input, repeat until valid input is entered.
         if params.paradigm.task
             fprintf(['Performing event-related potential (ERP) analysis? ' ...
                 '[Y/N]\n']) ;
-            params.paradigm.ERP.on = choose2('n', 'y') ;
+            val = python_args("performing_erp") ;
+            params.paradigm.ERP.on = val{1} ; % choose2('n', 'y') ;
         else; params.paradigm.ERP.on = 0 ;
         end
         % SET QC FREQS BASED ON THE PARADIGM: Use the paradigm to determine
@@ -149,12 +153,14 @@ while true
         fprintf(['Enter the task onset tags, one at a time, pressing ' ...
                 'enter/return between each entry.\nWhen you have entered ' ...
                 'all tags, input "done" (without quotations).\n']) ;
-        params.paradigm.onsetTags = UI_cellArray(1,{}) ;
+        val = python_args("erp_task_tags") ;
+        params.paradigm.onsetTags = val{1}{1} ; % UI_cellArray(1,{}) ;
         if size(params.paradigm.onsetTags,2) > 1
             fprintf(['Do multiple onset tags belong to a single condition?' ...
                 ' [Y/N]\nExample: "happy_face" and "sad_face" belong to ' ...
                 '"faces".\n']) ;
-            params.paradigm.conds.on = choose2('N', 'Y') ; 
+            val = python_args("erp_task_conditions") ;
+            params.paradigm.conds.on = val{1} ; % choose2('N', 'Y') ; 
             if params.paradigm.conds.on
                 params.paradigm.conds.groups = [] ;
                 fprintf(['Enter the conditions and included onset tags:\n' ...
@@ -163,27 +169,32 @@ while true
                 'in the list. Press enter/return between entries.\nWhen you ' ...
                 'have entered all conditions, input "done" (without quotations).\n' ...
                 'Example: faces happy_face sad_face angry_face\n']) ;
-                while true
-                    temp = split(input('> ', 's'))' ;
-                    if size(temp,2) == 1 && strcmpi(temp, 'done'); break ;
-                    elseif size(temp,2) > 2
-                        diff = size(temp,2) - size(params.paradigm.conds.groups,2) ;
-                        if diff > 0 && size(params.paradigm.conds.groups, 2) ~= 0
-                            params.paradigm.conds.groups = [params.paradigm.conds.groups ...
-                                cell(size(params.paradigm.conds.groups, ...
-                                1), diff)] ;
-                        elseif diff < 0 && size(params.paradigm.conds.groups, 2) ~= 0
-                            temp = [temp cell(1, abs(diff))] ;                %#ok<*AGROW>
-                        end
-                         params.paradigm.conds.groups = ...
-                                [params.paradigm.conds.groups; temp] ;
-                    else
-                        fprintf(['Invalid input: enter a condition name ' ...
-                            'and at least two entries or "done" ' ...
-                            '(without quotations).\n']) ;
-                        continue ;
-                    end
-                end
+                val = python_args("erp_task_group") ;
+                params.paradigm.conds.groups = val{1}{1} ;
+                % while true
+                %     val = python_args("erp_task_group") ;
+                %     temp = split(val{1}) ; % split(input('> ', 's'))' ;
+                %     %if size(temp,2) == 1 && strcmpi(temp, %'done'); break ;
+                %     % elseif size(temp,2) > 2
+                %     % if true
+                %     diff = size(temp,2) - size(params.paradigm.conds.groups,2) ;
+                %     if diff > 0 && size(params.paradigm.conds.groups, 2) ~= 0
+                %         params.paradigm.conds.groups = [params.paradigm.conds.groups ...
+                %             cell(size(params.paradigm.conds.groups, ...
+                %             1), diff)] ;
+                %     elseif diff < 0 && size(params.paradigm.conds.groups, 2) ~= 0
+                %         temp = [temp cell(1, abs(diff))] ;                %#ok<*AGROW>
+                %     end
+                %         params.paradigm.conds.groups = ...
+                %             [params.paradigm.conds.groups; temp] ;
+                %     break ; % MIKEE
+                %     % else
+                %     %     fprintf(['Invalid input: enter a condition name ' ...
+                %     %         'and at least two entries or "done" ' ...
+                %     %         '(without quotations).\n']) ;
+                %     %     continue ;
+                %     % end
+                % end
             else; params.paradigm.conds.on = 0 ;
             end
         else; params.paradigm.conds.on = 0 ;
@@ -207,9 +218,11 @@ while true
     
     %% LINE NOISE FREQUENCY AND METHOD
     if (~preExist || strcmpi(paramChoice, 'line noise frequency')) && ~reprocessing
-        params.lineNoise.freq = input(['Frequency of electrical (line) ' ...
-            'noise in Hz:\nUSA data probably = 60; Otherwise, probably = ' ...
-            '50\n> ']) ; 
+        val = python_args("power_line_hz") ;
+        params.lineNoise.freq = val{1} ; 
+        % input(['Frequency of electrical (line) ' ...
+        %     'noise in Hz:\nUSA data probably = 60; Otherwise, probably = ' ...
+        %     '50\n> ']) ; 
         params.lineNoise.neighbors = [params.lineNoise.freq-10, params.lineNoise.freq-5, ...
             params.lineNoise.freq-2, params.lineNoise.freq-1, params.lineNoise.freq, ...
             params.lineNoise.freq+1, params.lineNoise.freq+2, params.lineNoise.freq+5, ...
@@ -217,7 +230,8 @@ while true
         
         fprintf(['Are there any additional frequencies, (e.g., harmonics) to' ...
             ' reduce? [Y/N]\n']) ;
-        params.lineNoise.harms.on = choose2('n', 'y') ;
+        val = python_args("other_fqcies") ;
+        params.lineNoise.harms.on = val{1} ; % choose2('n', 'y') ;
         if params.lineNoise.harms.on
             fprintf(['Enter the frequencies, one at a time, to pass through' ...
                 ' noise reduction.\nWhen finished entering frequencies, enter ' ...
@@ -242,12 +256,14 @@ while true
     if (~preExist || strcmpi(paramChoice, 'line noise reduction')) && ~reprocessing
         fprintf(['Line noise reduction method:\n  cleanline = Use Tim ' ...
             'Mullen''s CleanLine\n  notch = Use a notch filter.\n']) ;
-        params.lineNoise.cl = choose2('notch', 'cleanline') ;
+        val = python_args("line_noise_reduction") ; 
+        params.lineNoise.cl = val{1} ; % choose2('notch', 'cleanline') ;
         if params.lineNoise.cl
             fprintf(['Use legacy or default line noise reduction?\n  default - Default method' ...
                 ' optimized in HAPPE v2\n  legacy - Method from HAPPE v1 (NOT' ...
                 ' RECOMMENDED\n']) ;
-            params.lineNoise.legacy = choose2('default', 'legacy') ;
+            val = python_args("line_noise_reduction_mode") ;
+            params.lineNoise.legacy = val{1} ; % choose2('default', 'legacy') ;
         else
             fprintf(['Enter lower cutoff, in Hz, for the notch filter:\n' ...
                 'Example:' sprintf(' %i', params.lineNoise.freq-1) '\n']) ;
@@ -266,15 +282,18 @@ while true
     %% FILTER
     if params.paradigm.ERP.on && (~preExist || strcmpi(paramChoice, 'filter'))
         params.filt.on = 1 ;
-        params.filt.lowpass = input(['Enter low-pass filter, ' ...
-            'in Hz:\nCommon low-pass filter is 30 - 45 Hz.\n> ']) ;
-        params.filt.highpass = input(['Enter high-pass filter,' ...
-            ' in Hz:\nCommon high-pass filter is 0.1 - 0.3 Hz.\n> ']) ;
+        val = python_args("low_pass_filter") ;
+        params.filt.lowpass = val{1} ; % input(['Enter low-pass filter, ' ...
+            %'in Hz:\nCommon low-pass filter is 30 - 45 Hz.\n> ']) ;
+        val = python_args("high_pass_filter") ;
+        params.filt.highpass = val{1} ; % input(['Enter high-pass filter,' ...
+            %' in Hz:\nCommon high-pass filter is 0.1 - 0.3 Hz.\n> ']) ;
         if params.loadInfo.chanlocs.inc
             fprintf(['Choose a filter:\n  fir = Hamming windowed sinc FIR' ...
                 'filter (EEGLAB''s standard filter)\n  butter = IIR ' ...
                 'butterworth filter (ERPLAB''s standard filter)\n']) ;
-            params.filt.butter = choose2('fir', 'butter') ;
+            val = python_args("filter_type") ;
+            params.filt.butter = val{1} ; % choose2('fir', 'butter') ;
         else; params.filt.butter = 0 ;
         end
     elseif ~params.paradigm.ERP.on && (~preExist || strcmpi(paramChoice, ...
@@ -316,7 +335,8 @@ while true
     %% BAD CHANNEL DETECTION
     if (~preExist || strcmpi(paramChoice, 'bad channel detection')) && ~reprocessing
         fprintf('Perform bad channel detection? [Y/N]\n') ;
-        params.badChans.rej = choose2('n','y') ;
+        val = python_args("bad_chann_rejection") ;
+        params.badChans.rej = val{1} ; % choose2('n','y') ;
         if params.badChans.rej
             if params.lowDensity; params.badChans.order = 0 ;
             else
@@ -338,11 +358,13 @@ while true
     if (~preExist || strcmpi(paramChoice, 'ECGone')) && ~reprocessing
         fprintf(['Use ECGone (adapted from Isler et al., 2022) to reduce ' ...
             'excess ECG artifact in your data? [Y/N]\n']) ;
-        params.ecgone.on = choose2('N', 'Y') ;
+        val = python_args("ecgone") ;
+        params.ecgone.on = val{1} ; % choose2('N', 'Y') ;
         if params.ecgone.on
             fprintf(['Does your data contain a dedicated ECG channel? [Y/N]' ...
                 '\n']) ;
-            params.ecgone.ECGchan.inc = choose2('N', 'Y') ;
+            val = python_args("ecgone_dedicated") ;
+            params.ecgone.ECGchan.inc = val{1} ; % choose2('N', 'Y') ;
             if params.ecgone.ECGchan.inc
                 fprintf('Dedicated ECG channel name:\n') ;
                 params.ecgone.ECGchan.ID = input('> ', 's') ;
@@ -352,13 +374,16 @@ while true
                     ' to create a proxy:\nPress enter/return between each' ...
                     ' entry.\nExample: E17\nWhen you have entered all ' ...
                     'channels, input "done" (without quotations).\n']) ;
-                params.ecgone.ECGchan.ID = unique(UI_cellArray(1, {}), 'stable') ;
+                val = python_args("ecgone_proxy_channels") ;
+                params.ecgone.ECGchan.ID = val{1}{1} ; % MIKEE: HARDCODED, TODO!! unique(UI_cellArray(1, {}), 'stable') ;
                 fprintf(['Threshold for determining if proxy contains ' ...
                     'significant ECG artifact:\nExample: 10\n']) ;
-                params.ecgone.peaky = input('> ') ;
+                val = python_args("ecgone_threshold") ;
+                params.ecgone.peaky = val{1} ; % input('> ') ;
             end
             fprintf('Window creation length in MILLISECONDS for peak detection:\n') ;
-            params.ecgone.peakWinSize = input('> ')/1000 ;
+            val = python_args("ecgone_peak_window") ;
+            params.ecgone.peakWinSize = val{1}/1000 % input('> ')/1000 ;
 %             fprintf('Template window creation length in SECONDS:\n') ;
 %             params.ecgone.procEpoch = input('> ') ;
             params.ecgone.procEpoch = 30 ;
@@ -370,13 +395,15 @@ while true
         fprintf(['Method of wavelet thresholding:\n  default = Default' ...
             'method optimized in HAPPE v2.\n  legacy = Method from HAPPE' ...
             ' v1 (NOT RECOMMENDED).\n']) ;
-        params.wavelet.legacy = choose2('default', 'legacy') ;
+        val = python_args("wavelet_method") ;
+        params.wavelet.legacy = val{1} ; % choose2('default', 'legacy') ;
         if ~params.wavelet.legacy
             if params.paradigm.ERP.on
                 fprintf(['Threshold rule for wavelet thresholding:\n  soft - ' ...
                     'Use a soft threshold\n' ...
                     '  hard - Use a hard threshold\n']) ;
-                params.wavelet.softThresh = choose2('hard', 'soft') ;
+                val = python_args("wavelet_threshold") ;
+                params.wavelet.softThresh = val{1} ; % choose2('hard', 'soft') ;
             end
         end
     end
@@ -396,42 +423,49 @@ while true
     %% SEGMENTATION
     if ~preExist || strcmpi(paramChoice, 'segmentation')
         fprintf('Segment data? [Y/N]\n') ;
-        params.segment.on = choose2('N', 'Y') ;
+        val = python_args("segment") ;
+        params.segment.on = val{1} ; % choose2('N', 'Y') ;
         if params.segment.on
             if params.paradigm.task
-                params.segment.start = input(['Segment start, in MILLISECONDS, ' ...
-                    'relative to stimulus onset:\nExample: -100\n> '])/1000 ;
-                params.segment.end = input(['Segment end, in MILLISECONDS, ' ...
-                    'relative to stimulus onset:\n> '])/1000 ;
-%                 params.segment.bounds = NaN(size(params.paradigm.onsetTags,2),2) ;
-                % SET SEGMENT START AND END
-%                 for i=1:size(params.segment.bounds,1)
-%                     params.segment.bounds(1,1) = input(['Segment start, in MILLISECONDS, ' ...
-%                         'relative to stimulus onset for "' params.paradigm.onsetTags{i} ...
-%                         '":\nExample: -100\n> '])/1000 ;
-%                     params.segment.bounds(1,2) = input(['Segment end, in MILLISECONDS, ' ...
-%                         'relative to stimulus onset for "' params.paradigm.onsetTags{i} ...
-%                         '":\n> '])/1000 ;
-%                 end
+                val = python_args("segment_start") ;
+                params.segment.start = val{1}/1000 ; % input(['Segment start, in MILLISECONDS, ' ...
+                %     'relative to stimulus onset:\nExample: -100\n> '])/1000 ;
+                val = python_args("segment_end") ;
+                params.segment.end = val{1}/1000 ; % input(['Segment end, in MILLISECONDS, ' ...
+                %     'relative to stimulus onset:\n> '])/1000 ;
+                %                 params.segment.bounds = NaN(size(params.paradigm.onsetTags,2),2) ;
+                                % SET SEGMENT START AND END
+                %                 for i=1:size(params.segment.bounds,1)
+                %                     params.segment.bounds(1,1) = input(['Segment start, in MILLISECONDS, ' ...
+                %                         'relative to stimulus onset for "' params.paradigm.onsetTags{i} ...
+                %                         '":\nExample: -100\n> '])/1000 ;
+                %                     params.segment.bounds(1,2) = input(['Segment end, in MILLISECONDS, ' ...
+                %                         'relative to stimulus onset for "' params.paradigm.onsetTags{i} ...
+                %                         '":\n> '])/1000 ;
+                %                 end
                 if params.paradigm.ERP.on
                     % DETERMINE TASK OFFSET
                     % *** For this, maybe make it possible to upload a list
                     % of offset delays?
-                    params.segment.offset = input(['Offset delay, in MILLISECONDS, ' ...
-                        'between stimulus initiation and presentation:\n' ...
-                        'NOTE: Please enter the total offset (combined system' ...
-                        ' and task-specific offsets).\n' ...
-                        '> ']) ;
+                    val = python_args("offset_delay") ;
+                    params.segment.offset = val{1} ; % input(['Offset delay, in MILLISECONDS, ' ...
+                        % 'between stimulus initiation and presentation:\n' ...
+                        % 'NOTE: Please enter the total offset (combined system' ...
+                        % ' and task-specific offsets).\n' ...
+                        % '> ']) ;
                     % DETERMINE IF WANT BASELINE CORRECTION
                     fprintf('Perform baseline correction (by subtraction)? [Y/N]\n') ;
-                    params.baseCorr.on = choose2('n', 'y') ;
+                    val = python_args("baseline_corr") ;
+                    params.baseCorr.on = val{1} ; % choose2('n', 'y') ;
                     if params.baseCorr.on
                         % DETERMINE BASELINE START AND END
-                        params.baseCorr.start = input(['Enter, in MILLISECONDS,' ...
-                            ' where the baseline segment begins:\nExample: -100\n> ']) ;
-                        params.baseCorr.end = input(['Enter, in MILLISECONDS,' ...
-                            ' where the baseline segment ends:\n' ...
-                            'NOTE: 0 indicates stimulus onset.\n> ']) ;
+                        val = python_args("baseline_corr_start") ;
+                        params.baseCorr.start = val{1} ; % input(['Enter, in MILLISECONDS,' ...
+                            % ' where the baseline segment begins:\nExample: -100\n> ']) ;
+                        val = python_args("baseline_corr_end") ;
+                        params.baseCorr.end = val{1} ; % input(['Enter, in MILLISECONDS,' ...
+                            % ' where the baseline segment ends:\n' ...
+                            % 'NOTE: 0 indicates stimulus onset.\n> ']) ;
                     end
                 end
             % DETERMINE SEGMENT LENGTH
@@ -448,27 +482,32 @@ while true
         else
             fprintf(['Interpolate the specific channels data determined ' ...
                 'to be artifact/bad within each segment? [Y/N]\n']) ;
-            params.segment.interp = choose2('n', 'y') ;
+            val = python_args("segment_interpolate") ;
+            params.segment.interp = val{1} ; % choose2('n', 'y') ;
         end
     end
     
     %% SEGMENT REJECTION
     if ~preExist || strcmpi(paramChoice, 'segment rejection')
         fprintf('Perform segment rejection? [Y/N]\n') ;
-        params.segRej.on = choose2('n', 'y') ;
+        val = python_args("segment_rejection") ;
+        params.segRej.on = val{1} ; % choose2('n', 'y') ;
         if params.segRej.on
             fprintf(['Choose a method of segment rejection:\n  amplitude =' ...
                 ' Amplitude criteria only\n  similarity = Segment ' ...
                 'similarity only\n  both = Both amplitude criteria and ' ...
                 'segment similarity\n']) ;
             while true
-                params.segRej.method = input('> ','s') ;
+                val = python_args("segment_rejection_method") ;
+                params.segRej.method = val{1} ; % input('> ','s') ;
                 if strcmpi(params.segRej.method, 'amplitude') || ...
                         strcmpi(params.segRej.method, 'both')
-                    params.segRej.minAmp = input(['Minimum signal amplitude' ...
-                        ' to use as the artifact threshold:\n> ']) ;
-                    params.segRej.maxAmp = input(['Maximum signal amplitude' ...
-                        'to use as the artifact threshold:\n> ']) ;
+                    val = python_args("rejection_amplitude_low") ;
+                    params.segRej.minAmp = val{1} ; % input(['Minimum signal amplitude' ...
+                        %' to use as the artifact threshold:\n> ']) ;
+                    val = python_args("rejection_amplitude_high") ;
+                    params.segRej.maxAmp = val{1} % input(['Maximum signal amplitude' ...
+                        %'to use as the artifact threshold:\n> ']) ;
                     break ;
                 elseif strcmpi(params.segRej.method, 'similarity'); break ;
                 else
@@ -479,7 +518,8 @@ while true
             fprintf(['Use all channels or a region of interest for ' ...
                 'segment rejection?\n  all = All channels\n  roi = Region' ...
                 ' of interest\n']) ;
-            params.segRej.ROI.on = choose2('all', 'roi') ;
+            val = python_args("rejection_use_roi") ;
+            params.segRej.ROI.on = val{1} ; % choose2('all', 'roi') ;
             if params.segRej.ROI.on
                 fprintf(['Choose an option for entering channels:\n  include = ' ...
                     'Include ONLY the entered channel names\n  exclude = Include ' ...
@@ -510,11 +550,13 @@ while true
         if ~params.loadInfo.chanlocs.inc; params.reref.on = 0;
         else
             fprintf('Re-reference data? [Y/N]\n') ;
-            params.reref.on = choose2('n', 'y') ;
+            val = python_args("rereference") ;
+            params.reref.on = val{1} ; % choose2('n', 'y') ;
             if params.reref.on
                 fprintf(['Does your data contain a flatline or all zero ' ...
                     'reference channel? [Y/N]\n']) ;
-                params.reref.flat = choose2('n', 'y') ;
+                val = python_args("rereference_flat_chann") ;
+                params.reref.flat = val{1} ; % choose2('n', 'y') ;
                 if params.reref.flat
                     fprintf(['Enter reference channel ID:\nIf unknown, ' ...
                         'press enter/return.\n']) ;
@@ -526,7 +568,8 @@ while true
                     'or subset of channels\n  rest = Re-reference using' ...
                     ' infinity with REST (Yao, 2001)\n']) ;
                 while true
-                    params.reref.method = input('> ', 's') ;
+                    val = python_args("rereference_method") ;
+                    params.reref.method = val{1} ; % input('> ', 's') ;
                     if strcmpi(params.reref.method, 'subset')
                         fprintf(['Enter channel/subset of channels to ' ...
                         're-reference to, one at a time.\nWhen you have ' ...
@@ -639,51 +682,58 @@ while true
     %% VISUALIZATIONS
     if ~preExist || strcmpi(paramChoice, 'visualizations')
         fprintf('Run HAPPE with visualizations? [Y/N]\n') ;
-        params.vis.enabled = choose2('N', 'Y') ;
+        val = python_args("visualize") ;
+        params.vis.enabled = val{1} ; % choose2('N', 'Y') ;
         if params.vis.enabled
             % POWER SPECTRUM:
             % Min and Max
-            params.vis.min = input("Minimum value for power spectrum figure:\n> ") ;
-            params.vis.max = input("Maximum value for power spectrum figure:\n> ") ;
+            val = python_args("visualize_min_fqcy") ;
+            params.vis.min = val{1} ; % input("Minimum value for power spectrum figure:\n> ") ;
+            val = python_args("visualize_max_fqcy") ;
+            params.vis.max = val{1} ; % input("Maximum value for power spectrum figure:\n> ") ;
 
             % Frequencies for spatial topoplots
             fprintf(['Enter the frequencies, one at a time, to generate ' ...
                 'spatial topoplots for:\nWhen you have entered all ' ...
                 'frequencies, input "done" (without quotations).\n']) ;
-            indx = 1 ;
-            while true
-                user_input = input('> ', 's') ;
-                if strcmpi(user_input, 'done')
-                    params.vis.toPlot = unique(params.vis.toPlot, 'stable') ;
-                    break ;
-                else
-                    params.vis.toPlot(indx) = str2double(user_input) ;
-                    indx = indx + 1 ;
-                end
-            end
+            % indx = 1 ;
+            % while true
+                % user_input = input('> ', 's') ;
+                %if strcmpi(user_input, 'done')
+            val = python_args("visualize_topoplot") ;
+            params.vis.toPlot = val{1}{1} ; % unique(params.vis.toPlot, 'stable') ;
+            % break ;
+                %else
+                %    params.vis.toPlot(indx) = str2double(user_input) ;
+                %    indx = indx + 1 ;
+                %end
+            % end
             
             if params.paradigm.ERP.on
                 % DETERMINE TIME RANGE FOR THE TIMESERIES FIGURE        
-                params.vis.min = input('Start time, in MILLISECONDS, for the ERP timeseries figure:\n> ') ;
-                params.vis.max = input(['End time, in MILLISECONDS, for the ERP timeseries figure:\n' ...
-                    'NOTE: This should end 1+ millisecond(s) before your segmentation parameter ends (e.g. 299 for 300).\n' ...
-                    '> ']) ;
+                val = python_args("visualize_erp_starttime") ;
+                params.vis.min = val{1} ; % input('Start time, in MILLISECONDS, for the ERP timeseries figure:\n> ') ;
+                val = python_args("visualize_erp_endtime") ;
+                params.vis.max = val{1} ; % input(['End time, in MILLISECONDS, for the ERP timeseries figure:\n' ...
+                %     'NOTE: This should end 1+ millisecond(s) before your segmentation parameter ends (e.g. 299 for 300).\n' ...
+                %     '> ']) ;
                 
                 % Frequencies for spatial topoplots
                 fprintf(['Enter the latencies, one at a time, to ' ...
                     'generate spatial topoplots for:\nWhen you have ' ...
                     'entered all latencies, input "done" (without ' ...
                     'quotations).\n']) ;
-                indx = 1 ;
+                % indx = 1 ;
                 while true
-                    user_input = input('> ', 's') ;
-                    if strcmpi(user_input, 'done')
-                        params.vis.toPlot = unique(params.vis.toPlot, 'stable') ;
+                    % user_input = input('> ', 's') ;
+                    % if strcmpi(user_input, 'done')
+                        val = python_args("visualize_erp_latency_topoplots") ;
+                        params.vis.toPlot = val{1}{1} ; % unique(params.vis.toPlot, 'stable') ;
                         break ;
-                    else
-                        params.vis.toPlot(indx) = str2double(user_input) ;
-                        indx = indx + 1 ;
-                    end
+                    %else
+                    %    params.vis.toPlot(indx) = str2double(user_input) ;
+                    %    indx = indx + 1 ;
+                    %end
                 end
             end
         end
@@ -694,7 +744,7 @@ while true
        fprintf('Please check your parameters before continuing.\n') ;
        listParams(params) ;
        fprintf('Are the above parameters correct? [Y/N]\n') ;
-       if choose2('n','y'); break ;
+       if 1 break; % choose2('n','y'); break ;
        elseif ~preExist
            changedParams = 1 ;
            preExist = 1 ;

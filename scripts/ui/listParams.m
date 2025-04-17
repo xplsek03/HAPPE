@@ -289,7 +289,7 @@ end
 %% Re-Reference
 fprintf('Re-Referencing: ') ;
 if params.reref.on
-    fprintf(['On\n - Re-Reference Method: ' params.reref.method '\n']) ;
+    % MIKEE ?? fprintf(['On\n - Re-Reference Method: ' params.reref.method '\n']) ;
     if strcmpi(params.reref.method, 'subset')
         if size(params.reref.subset,2) > 1
             fprintf([' - Subset: ' sprintf('%s, ', params.reref.subset{1:end-1}) ...
@@ -334,9 +334,9 @@ if params.vis.enabled
         fprintf(' - Times to Plot: ');
         for i=1:length(params.vis.toPlot)
             if i == length(params.vis.toPlot)
-                fprintf('%i\n', params.vis.toPlot(i)) ;
+                % fprintf('%i\n', params.vis.toPlot(i)) ;
             else
-                fprintf('%i, ', params.vis.toPlot(i)) ;
+                % fprintf('%i, ', params.vis.toPlot(i)) ;
             end
         end
     else

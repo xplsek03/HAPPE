@@ -186,8 +186,8 @@ params = setParams(params, preExist, reprocess, changeParams, happeDir) ;
 if ~preExist || changeParams
     % CREATE "input_parameters" FOLDER AND ADD IT TO PATH, unless it
     % already exists.
-    if ~isfolder([srcDir filesep 'input_parameters'])
-        mkdir([srcDir filesep 'input_parameters']) ;
+    if ~isfolder(strjoin([srcDir filesep 'input_parameters'], ''))
+        mkdir(strjoin([srcDir filesep 'input_parameters'], '')) ;
     end
     addpath('input_parameters') ;
     cd input_parameters ;
@@ -198,7 +198,7 @@ if ~preExist || changeParams
     fprintf(['Parameter file save name:\n  default = Default name (input' ...
         'Parameters_dd-mm-yyyy.mat).\n  custom = Create a custom file name' ...
         '\n']) ;
-    if choose2('custom', 'default')
+    if 1 % choose2('custom', 'default')
         paramFile = paramFile_validateExist(['inputParameters_' ...
             datestr(now, 'dd-mm-yyyy') '.mat'], 'inputParameters_', 2) ;
     else
@@ -1063,6 +1063,7 @@ for currFile = 1:length(FileNames)
         cd(str_path) ;
         if params.vis.enabled
            if params.paradigm.ERP.on
+               disp(params.vis.toPlot) ;
                figure; pop_timtopo(EEG, [params.vis.min params.vis.max], ...
                    params.vis.toPlot) ;
                saveas(gcf, strrep(FileNames{currFile}, inputExt, ...

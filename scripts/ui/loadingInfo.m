@@ -195,12 +195,15 @@ end
 %               HAPPE through user input via the command line. Does not 
 %               throw errors for or accept invalid input.
 function inputFormat = setFormat()
+    global python_args ;
     fprintf(['File format:\n  1 = .mat (MATLAB file)\n  2 = .raw' ...
         ' (Net Station simple binary)\n  3 = .set (EEGLAB format)\n' ...
         '  4 = .cdt (Neuroscan)\n  5 = .mff (EGI)\n  6 = .edf\n' ...
         '  7 = .bdf->.set (Mentalab)\n']) ;
     while true
-        inputFormat = input('> ') ;
+        % inputFormat = input('> ') ;
+        val = python_args("file_format") ;
+        inputFormat = val{1} ;
         if ismember(inputFormat, 1:7); break ;
         else; disp("Invalid input: please enter an integer between 1 and 7.") ;
         end
@@ -212,12 +215,14 @@ end
 %               electrodes. Does not accept an invalid company, but will
 %               accept any number of channels.
 function [layout, correctEGI] = setLayout(inputFormat)
+global python_args ;
 layout = [0,0] ;
 fprintf(['Acquisition layout type:\n  1 = EGI Geodesic Sensor ' ...
     'Net\n  2 = EGI HydroCel Geodesic Sensor Net\n  3 = Neuroscan Quik-Cap' ...
     '\n  4 = Mentalab Explore\n  5 = Other\n']) ;
 while true
-    layout(1) = input('> ') ;
+    val = python_args("layout_type") ;
+    layout(1) = val{1} ; % input('> ') ;
     if ismember(layout(1), 1:5); break;
     else; fprintf('Invalid input: please enter an integer between 1 and 5.\n') ;
     end
@@ -245,7 +250,8 @@ while true
     end
     
     fprintf('Number of channels: \n') ;
-    layout(2) = input('> ') ;
+    val = python_args("channels_count") ;
+    layout(2) = val{1} ; % input('> ') ;
     
     % Automatically assume that any EGI layout needs correcting
     if ismember(layout(1), [1,2]); correctEGI = 1;

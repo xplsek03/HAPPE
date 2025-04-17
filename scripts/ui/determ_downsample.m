@@ -32,8 +32,10 @@
 % with HAPPE. If not, see <https://www.gnu.org/licenses/>.
 
 function freq = determ_downsample()
+global python_args ;
 fprintf('Resample data? [Y/N]\n') ;
-if choose2("n", "y")
+val = python_args("resample") ;
+if val{1} % choose2("n", "y")
     fprintf(['HAPPE supports resampling to 250, 500, and 1000 Hz.\nResample' ...
         ' frequency:\n']) ;
     while true
