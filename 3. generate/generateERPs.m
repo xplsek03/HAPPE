@@ -51,8 +51,10 @@ while true
     srcDir = val{1} ;
     % srcDir = input('Enter the path to the folder containing the processed dataset(s):\n> ','s') ;
 
+    disp(srcDir) ;
     if exist(srcDir, 'dir') == 7; break ;
     else; disp("Invalid input: please enter the complete path to the folder containing the dataset(s).") ;
+        disp(x)
     end
 end
 cd(srcDir) ;
