@@ -77,7 +77,7 @@ while true
     % Ask the user if they want to include entered channels or exclude
     % entered channels.
     if ~preExist || strcmpi(paramChoice, 'channels of interest')
-        [params.chans.subset, params.chans.IDs] = determ_chanIDs() ;
+        [params.chans.subset, params.chans.IDs] = determ_chanIDs(0) ; % MIKEE: getting from gen_args dict, not from global
     end
     
     %% DETERMINE IF INCLUDING/EXCLUDING BAD CHANNELS

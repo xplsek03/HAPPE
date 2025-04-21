@@ -36,15 +36,30 @@
 % You should have received a copy of the GNU General Public License along
 % with HAPPE. If not, see <https://www.gnu.org/licenses/>.
 
-function [chansAll, chanIDs] = determ_chanIDs()
+function [chansAll, chanIDs] = determ_chanIDs(varargin)
 
 global gen_args ;
+global python_args ;
+
+% MIKEE: as default, get from HAPPE python_args, for usage in generateERPs get it from gen_args
+if ~isempty(varargin)
+    get_from_python_args = varargin{1};
+else
+    get_from_python_args = 1;
+end
 
 fprintf(['Select channels of interest:\n  all = Select all channels in the ' ...
     'data\n  coi = Select a user-specified subset of channels\n']) ;
 while true
+
+    % MIKEE: for cleaning, use all channels, for erps, only subset: reasoning in docs
+    if get_from_python_args % for HAPPE itself
+        val = python_args("coi") ;
+    else % for erps
+        val = gen_args("coi") ;
+    end
+
     % Collect and store user input
-    val = gen_args("coi") ;
     chansAll = val{1} ;
     % chansAll = input('> ', 's') ;
     
@@ -58,7 +73,7 @@ while true
             'Include ONLY the entered channel names\n  exclude = Include ' ...
             'every channel EXCEPT the entered channel names\n']) ;
         % while true
-        val = gen_args("coi_method") ;
+        val = gen_args("coi_method") ; % this is only for erps calc so its ok to use gen_args
         chansAll = val{1} ; % ['coi_' input('> ', 's')] ;
         %     if strcmpi(chansAll, 'coi_include') || strcmpi(chansAll, ...
         %             'coi_exclude'); break ;

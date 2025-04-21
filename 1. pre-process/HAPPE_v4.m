@@ -784,7 +784,7 @@ for currFile = 1:length(FileNames)
                 % filter using the EEGLAB function.
                 else
                     EEG = pop_eegfiltnew(EEG, params.filt.highpass, ...
-                        params.filt.lowpass, [], 0, [], 0) ;
+                       params.filt.lowpass) ;
                 end
                 EEG.setname = [EEG.setname '_forERP'] ;
             catch ME
@@ -1063,6 +1063,20 @@ for currFile = 1:length(FileNames)
         cd(str_path) ;
         if params.vis.enabled
            if params.paradigm.ERP.on
+
+                % MIKE: also visualize separately
+                if params.paradigm.task && size(params.paradigm.onsetTags,2) > 1
+                    for i=1:size(eegByTags, 2)
+                        if ~isempty(eegByTags{i})
+                            disp(params.vis.toPlot) ;
+                            figure; pop_timtopo(eegByTags{i}, [params.vis.min params.vis.max], ...
+                                params.vis.toPlot) ;
+                            saveas(gcf, strrep(FileNames{currFile}, inputExt, ...
+                                ['_processedERPspectrum_' params.paradigm.onsetTags{i} rerunExt '.jpg'])) ;
+                        end
+                    end
+                end
+
                disp(params.vis.toPlot) ;
                figure; pop_timtopo(EEG, [params.vis.min params.vis.max], ...
                    params.vis.toPlot) ;

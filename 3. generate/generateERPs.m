@@ -31,7 +31,7 @@
 clear ;
 
 %% MIKE
-global gen_args;
+global gen_args ;
 
 fprintf('Preparing HAPPE generateERPs...\n') ;
 happeDir = strrep(fileparts(which(mfilename('fullpath'))), [filesep '3. ' ...
@@ -46,15 +46,11 @@ addpath([happeDir filesep '3. generate'], ...
 % Use input from the command line to set the path to the data. If an 
 % invalid path is entered, repeat until a valid path is entered.
 while true
-
     val = gen_args("erp_prepared_dir") ;
     srcDir = val{1} ;
     % srcDir = input('Enter the path to the folder containing the processed dataset(s):\n> ','s') ;
-
-    disp(srcDir) ;
     if exist(srcDir, 'dir') == 7; break ;
     else; disp("Invalid input: please enter the complete path to the folder containing the dataset(s).") ;
-        disp(x)
     end
 end
 cd(srcDir) ;
@@ -117,7 +113,9 @@ fprintf(sprintf(['Enter the suffix used for this dataset, including stimulus tag
     ' (if applicable).\nIf no extension beyond "%s", press ' ...
     'enter/return.\n'], ext)) ;
 % suffix = input('> ', 's') ;
-suffix = '' ;
+val = gen_args("file_suffix") ;
+suffix = char(val{1}) ;
+
 FileNames = {dir(['*' ext suffix '.txt']).name} ;
 if size(FileNames,2) < 1; error('ERROR: No files detected') ; end
 
@@ -148,10 +146,10 @@ end
 for currfile=1:size(FileNames, 2)+1
     % If processing a file...
     if currfile <= size(FileNames,2)
-        try
+        %try
             % LOAD FILE
             currsub = importdata(FileNames{currfile}) ;
-    
+
             % COMPILE LIST OF BAD CHANNELS
             if ~params.badChans.inc
                 subBadChans = badChans{contains(badChans(:,1), ... 
@@ -194,10 +192,11 @@ for currfile=1:size(FileNames, 2)+1
     
             trialBounds = [find(currsub.data(:,1)==min(lats)), ...
                     find(currsub.data(:,1)==max(lats))] ;
-        catch e
-            fprintf(['Failed to process ' FileNames{currfile} '...\n']) ;
-            continue ;
-        end
+        % catch e
+        %     disp(e) ;
+        %     fprintf(['Failed to process ' FileNames{currfile} '...\n']) ;
+        %     continue ;
+        %end
     % If processing the average of files...
     else
         temp = [] ;

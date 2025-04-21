@@ -170,6 +170,7 @@ while true
                 'have entered all conditions, input "done" (without quotations).\n' ...
                 'Example: faces happy_face sad_face angry_face\n']) ;
                 val = python_args("erp_task_group") ;
+                disp(val{1}{1}) ;
                 params.paradigm.conds.groups = val{1}{1} ;
                 % while true
                 %     val = python_args("erp_task_group") ;
@@ -375,7 +376,7 @@ while true
                     ' entry.\nExample: E17\nWhen you have entered all ' ...
                     'channels, input "done" (without quotations).\n']) ;
                 val = python_args("ecgone_proxy_channels") ;
-                params.ecgone.ECGchan.ID = val{1}{1} ; % MIKEE: HARDCODED, TODO!! unique(UI_cellArray(1, {}), 'stable') ;
+                params.ecgone.ECGchan.ID = val{1}{1} ; % unique(UI_cellArray(1, {}), 'stable') ;
                 fprintf(['Threshold for determining if proxy contains ' ...
                     'significant ECG artifact:\nExample: 10\n']) ;
                 val = python_args("ecgone_threshold") ;
