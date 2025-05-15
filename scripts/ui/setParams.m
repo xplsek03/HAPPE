@@ -576,7 +576,8 @@ while true
                         're-reference to, one at a time.\nWhen you have ' ...
                         'entered all channels, input "done" (without ' ...
                         'quotations).\n']) ;
-                        params.reref.subset = UI_cellArray(1,{}) ;
+                        val = python_args("rereference_subset_chann") ;
+                        params.reref.subset = val{1}{1};
                         break ;
                     elseif strcmpi(params.reref.method, 'average'); break;
                     elseif strcmpi(params.reref.method, 'rest')
